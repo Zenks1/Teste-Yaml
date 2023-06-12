@@ -1,0 +1,40 @@
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar dependências desatualizadas
+        uses: dependabot/dependabot-core@v0.160.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          directory: "/"
+          package_manager: "all"
+
+  codeql-analise:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fazer checkout do código
+        uses: actions/checkout@v2
+
+      - name: Inicializar o CodeQL
+        uses: github/codeql-action/init@v1
+
+      - name: Construir e analisar
+        uses: github/codeql-action/analyze@v1
+
+  implantar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fazer checkout do código
+        uses: actions/checkout@v2
+
+      - name: Implantar em produção
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          ./deploy_script.sh $API_KEY
