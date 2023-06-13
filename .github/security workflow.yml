@@ -27,14 +27,37 @@ jobs:
       - name: Construir e analisar
         uses: github/codeql-action/analyze@v1
 
-  implantar:
+  segredos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar segredos
+        uses: actions/secret-checker@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fail_on_secrets: true
+          paths: '.'
+
+  sonarqube:
     runs-on: ubuntu-latest
     steps:
       - name: Fazer checkout do código
         uses: actions/checkout@v2
 
-      - name: Implantar em produção
-        env:
-          API_KEY: ${{ secrets.API_KEY }}
-        run: |
-          ./deploy_script.sh $API_KEY
+      - name: Configurar o SonarQube
+        uses: sonarsource/sonarqube-scan-action@v1
+        with:
+          token: ${{ secrets.SONARQUBE_TOKEN }}
+          scannerVersion: '4.6'
+
+  horusec:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fazer checkout do código
+        uses: actions/checkout@v2
+
+      - name: Configurar o Horusec
+        uses: horusit/horusec-action@v2
+        with:
+          horusec_version: 'v2'
+          horusec_additional_flags: '--json-output'
+
